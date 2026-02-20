@@ -20,7 +20,7 @@
 
                 <a href="/produk" class="bg-white text-green-800 px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition duration-300">Belanja Sekarang</a>
 
-                <a href="#about" class="border-2 border-white px-6 py-3 rounded-full font-medium hover:bg-white hover:text-green-800 transition duration-300">Learn More</a>
+                <a href="/farmtour" class="border-2 border-white px-6 py-3 rounded-full font-medium hover:bg-white hover:text-green-800 transition duration-300">Learn More</a>
 
               </div>
 
@@ -78,7 +78,7 @@
 
                    class="block text-center w-full bg-green-700 text-white py-2 rounded-lg hover:bg-green-800 transition duration-300">
 
-                   View Details
+                   Lihat Detail
 
                 </a>
 
@@ -146,9 +146,16 @@
 
         <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4" data-aos="fade-up" data-aos-delay="200">
 
-          <a href="/shop" class="bg-white text-green-800 px-8 py-4 rounded-full font-bold hover:bg-gray-100 transition duration-300">Belanja produk kami</a>
+          <a href="/produk" class="bg-white text-green-800 px-8 py-4 rounded-full font-bold hover:bg-gray-100 transition duration-300">Belanja produk kami</a>
 
-          <a href="https://wa.me/6282116666603?text=Halo,%20Saya%20Ingin%20Bertanya%20Mengenai%20Jamur" target="_blank" class="border-2 border-white px-8 py-4 rounded-full font-bold hover:bg-white hover:text-green-800 transition duration-300">Kontak Kami</a>
+          <a
+            href="#"
+            @click.prevent="goToWhatsApp('home')"
+            class="border-2 border-white px-8 py-4 rounded-full font-bold hover:bg-white hover:text-green-800 transition duration-300"
+          >
+            Kontak Kami
+          </a>
+
 
         </div>
 
@@ -167,18 +174,17 @@
 
 
 <script setup>
-
+import axios from 'axios'
 import MainLayout from '@/layouts/MainLayout.vue'
-
 import { onMounted } from 'vue'
-
 import { usePage } from '@inertiajs/vue3'
-
+import { computed } from 'vue'
 
 
 // Ambil data dari props yang dikirim Controller
 
 const { props } = usePage()
+const page = usePage()
 
 const products = props.products
 
@@ -186,7 +192,7 @@ const heroImage = props.heroImage
 
 const aboutImage = props.aboutImage
 
-
+const waNumber = computed(() => page.props.wa_number)
 
 const features = [
 
@@ -200,6 +206,23 @@ const features = [
 
 ]
 
+const goToWhatsApp = async (sourcePage, productId = null) => {
+  try {
+    await axios.post('/click-log', {
+      source_page: sourcePage,
+      product_id: productId,
+    })
+  } catch (e) {
+    console.error('Click log failed', e)
+  } finally {
+    const phone = waNumber.value?.replace(/^0/, '62')
+    const text = encodeURIComponent(
+      'Halo, Saya Ingin Bertanya Mengenai Jamur'
+    )
+
+    window.open(`https://wa.me/${phone}?text=${text}`, '_blank')
+  }
+}
 
 
 onMounted(() => {

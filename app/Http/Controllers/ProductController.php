@@ -3,18 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Kategori;
 use Inertia\Inertia;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::all()->map(fn ($p) => [
-            'id' => $p->id,
-            'name' => $p->name,
-            'description' => $p->description,
+        $products = Product::with('kategori')->get()->map(fn ($p) => [
+            'id' => $p->id_produk,
+            'name' => $p->nama_produk,
+            'harga' => $p->harga_produk,
+            'description' => $p->deskripsi_produk,
+            'kategori' => $p->kategori?->nama_kategori,
             'image' => asset($p->image_path),
-            'tag' => $p->name === 'Jamur Tiram Putih' ? 'Best Seller' : 'Premium',
         ]);
 
         return Inertia::render('Produk', [
@@ -22,11 +24,15 @@ class ProductController extends Controller
         ]);
     }
 
+
+
     public function show($id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with('kategori')
+        ->where('id_produk', $id)
+        ->firstOrFail();
 
-        $details = match ($product->name) {
+        $details = match ($product->nama_produk) {
             'Jamur Tiram Putih' => [
                 'latin' => 'Pleurotus ostreatus',
                 'keluarga' => 'Pleurotaceae',
@@ -56,11 +62,14 @@ class ProductController extends Controller
 
         return Inertia::render('ProdukDetail', [
             'product' => [
-                'id' => $product->id,
-                'name' => $product->name,
+                'id' => $product->id_produk,
+                'name' => $product->nama_produk,
+                'harga' => $product->harga_produk,
                 'image' => asset($product->image_path),
+                'kategori' => $product->kategori?->nama_kategori,
                 'details' => $details,
             ],
         ]);
     }
+
 }

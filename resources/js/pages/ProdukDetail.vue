@@ -42,7 +42,7 @@
             <li><strong>Keluarga:</strong> {{ product.details.keluarga }}</li>
             <li>
               <strong>Harga:</strong>
-              Rp {{ Number(product.price).toLocaleString('id-ID') }}/kg
+              Rp {{ Number(product.harga).toLocaleString('id-ID') }}/kg
             </li>
           </ul>
 
@@ -62,8 +62,8 @@
 
           <!-- Tombol CTA -->
           <a
-            :href="`https://wa.me/6282116666603?text=Halo,%20saya%20ingin%20memesan%20${encodeURIComponent(product.name)}`"
-            target="_blank"
+            href="#"
+            @click.prevent="goToWhatsApp(product.id)"
             class="inline-block mt-8 bg-green-700 text-white px-8 py-3 rounded-full font-semibold hover:bg-green-800 transition shadow-md"
           >
             Pesan via WhatsApp
@@ -102,18 +102,43 @@
 
 <script setup>
 import MainLayout from '@/layouts/MainLayout.vue'
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { usePage } from '@inertiajs/vue3'
+import axios from 'axios'
 
-const { props } = usePage()
-const product = props.product
+const page = usePage()
+const product = page.props.product
+const waNumber = computed(() => page.props.wa_number)
+
+const goToWhatsApp = async (productId) => {
+  try {
+    await axios.post('/click-log', {
+      source_page: 'produk_detail',
+      product_id: productId,
+    })
+  } catch (e) {
+    console.error('Click log failed', e)
+  } finally {
+    const phone = waNumber.value?.replace(/^0/, '62')
+    const text = encodeURIComponent(
+      'Halo, saya ingin bertanya mengenai produk ini'
+    )
+    window.open(`https://wa.me/${phone}?text=${text}`, '_blank')
+  }
+}
 
 onMounted(() => {
-  if (window.AOS)
-    window.AOS.init({ duration: 800, easing: 'ease-in-out', once: true })
+  if (window.AOS) {
+    window.AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: true,
+    })
+  }
   document.title = `${product.name} – HSM Mushroom`
 })
 </script>
+
 
 <style scoped>
 h1,

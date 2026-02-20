@@ -37,6 +37,7 @@
                 v-if="menuOpen"
                 class="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg py-2 z-50"
               >
+                <Link href="/admin" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Dashboard</Link>
                 <Link href="/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profil</Link>
                 <Link
                   href="/logout"
@@ -49,12 +50,7 @@
               </div>
             </div>
 
-            <!-- Kalau belum login -->
-            <div v-else class="hidden md:block">
-              <Link
-                href="/login" class="px-5 py-2 border border-green-600 text-green-600 rounded-full hover:bg-green-600 hover:text-white transition">Login
-              </Link>
-            </div>
+            
 
             <!-- Mobile Hamburger -->
             <button
@@ -114,7 +110,6 @@
                 <Link href="/" :class="['nav-link text-lg py-3 px-2 rounded-lg', $page.url === '/' ? 'bg-green-50 text-green-700 font-semibold' : '']">Beranda</Link>
                 <Link href="/produk" :class="['nav-link text-lg py-3 px-2 rounded-lg', $page.url.startsWith('/produk') ? 'bg-green-50 text-green-700 font-semibold' : '']">Produk</Link>
                 <Link href="/farmtour" :class="['nav-link text-lg py-3 px-2 rounded-lg', $page.url.startsWith('/farmtour') ? 'bg-green-50 text-green-700 font-semibold' : '']">Farm Tour</Link>
-                <Link href="/login" class="mt-4 px-4 py-2 border ring-1 ring-green-600/30 border-green-600 text-green-600 rounded-lg text-center hover:bg-green-600 hover:text-white transition">Login</Link>
               </div>
             </DialogPanel>
           </TransitionChild>
@@ -150,14 +145,20 @@
               <li><a href="/lokasi" class="text-gray-400 hover:text-white transition">Lokasi Toko</a></li>
             </ul>
             <div class="flex space-x-4 mb-4">
-              <a href="https://wa.me/6282116666603?text=Halo,%20Saya%20Ingin%20Bertanya%20Mengenai%20Jamur" target="_blank" class="text-gray-400 hover:text-white transition"><i class="fab fa-whatsapp text-2xl"></i> Whatsapp</a>
+              <a
+                href="#"
+                @click.prevent="goToWhatsApp('footer')"
+                class="text-gray-400 hover:text-white transition"
+              >
+                <i class="fab fa-whatsapp text-2xl"></i> Whatsapp
+              </a>
+
             </div>
           </div>
           <div>
             <h4 class="text-lg font-semibold mb-4">Company</h4>
             <ul class="space-y-2">
               <li><a href="/farmtour" class="text-gray-400 hover:text-white transition">Budidaya</a></li>
-              <li><a href="/lowongan" class="text-gray-400 hover:text-white transition">Karir</a></li>
             </ul>
           </div>
         </div>
@@ -175,8 +176,11 @@
 </template>
 
 <script setup>
+import axios from 'axios'
 import { computed, ref } from "vue";
 import { Link, usePage, router } from "@inertiajs/vue3";
+
+const waNumber = computed(() => page.props.wa_number);
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
@@ -190,6 +194,26 @@ import {
   TransitionChild,
   TransitionRoot,
 } from "@headlessui/vue";
+
+const goToWhatsApp = async (sourcePage = 'layout', productId = null) => {
+  try {
+    await axios.post('/click-log', {
+      source_page: sourcePage,
+      product_id: productId,
+    })
+  } catch (e) {
+    console.error('Click log failed', e)
+  } finally {
+    const phone = waNumber.value?.replace(/^0/, '62')
+    const text = encodeURIComponent(
+      'Halo, saya ingin bertanya mengenai Jamur'
+    )
+
+    window.open(`https://wa.me/${phone}?text=${text}`, '_blank')
+  }
+}
+
+
 </script>
 
 <style scoped>

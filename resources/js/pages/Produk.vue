@@ -90,13 +90,19 @@
 
                   <!-- Didorong ke bawah -->
                   <div class="mt-auto flex justify-between items-center pt-4">
-                    <span class="text-gray-500 italic">
-                      Hubungi untuk harga
-                    </span>
+                    <div class="flex flex-col">
+                      <span class="text-lg font-semibold text-green-700">
+                        {{ formatRupiah(product.harga) }}
+                      </span>
+                      <span class="text-xs text-gray-500 italic">
+                        *Harga dapat berubah, konfirmasi via WhatsApp
+                      </span>
+                    </div>
+
 
                     <a
                       :href="`/produk/${product.id}`"
-                      class="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition"
+                      class="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition text-center"
                     >
                       Lihat Detail
                     </a>
@@ -127,14 +133,15 @@
             melayani dengan kualitas terbaik.
           </p>
           <a
-            href="https://wa.me/+6282116666603"
-            target="_blank"
+            href="#"
+            @click.prevent="goToWhatsApp('produk_list')"
             class="bg-white text-green-800 font-bold px-8 py-4 rounded-full hover:bg-gray-100 transition duration-300"
             data-aos="fade-up"
             data-aos-delay="200"
           >
             Hubungi Sekarang
           </a>
+
         </div>
       </section>
     </div>
@@ -145,6 +152,10 @@
 import MainLayout from '@/layouts/MainLayout.vue'
 import { ref, computed, onMounted } from 'vue'
 import { usePage } from '@inertiajs/vue3'
+import axios from 'axios'
+
+const page = usePage()
+const waNumber = computed(() => page.props.wa_number)
 
 const { props } = usePage()
 const products = ref(props.products || [])
@@ -159,10 +170,39 @@ const filteredProducts = computed(() => {
   )
 })
 
+const goToWhatsApp = async (sourcePage = 'produk_list', productId = null) => {
+  try {
+    await axios.post('/click-log', {
+      source_page: sourcePage,
+      product_id: productId,
+    })
+  } catch (e) {
+    console.error('Click log failed', e)
+  } finally {
+    const phone = waNumber.value?.replace(/^0/, '62')
+    const text = encodeURIComponent(
+      'Halo, saya ingin bertanya mengenai produk jamur'
+    )
+
+    window.open(`https://wa.me/${phone}?text=${text}`, '_blank')
+  }
+}
+
+
 onMounted(() => {
-  if (window.AOS) window.AOS.init({ duration: 800, easing: 'ease-in-out', once: true })
+  if (window.AOS) window.AOS.init({ duration: 800, easing: 'ease-in-out', once: true, offset: 60  })
   if (window.feather) window.feather.replace()
 })
+
+const formatRupiah = (value) => {
+  if (!value) return '-'
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+  }).format(value)
+}
+
 </script>
 
 <style scoped>

@@ -9,21 +9,20 @@ class Product extends Model
 {
     use HasFactory;
 
+    protected $table = 'produk';
+    protected $primaryKey = 'id_produk';
+
     protected $fillable = [
-        'name',
-        'description',
+        'id_kategori',
+        'nama_produk',
+        'harga_produk',
+        'deskripsi_produk',
         'image_path',
     ];
 
-    // Relasi: satu produk bisa difavoritkan banyak user
-    public function favorites()
+    // Relasi: produk milik satu kategori
+    public function kategori()
     {
-        return $this->hasMany(Favorite::class);
-    }
-
-    // Relasi: satu produk bisa ada di banyak order
-    public function orders()
-    {
-        return $this->hasMany(Order::class);
+        return $this->belongsTo(Kategori::class, 'id_kategori', 'id_kategori');
     }
 }
